@@ -479,3 +479,76 @@ loadingStyle.textContent = `
     }
 `;
 document.head.appendChild(loadingStyle);
+// ====== TELEGRAM BOT CONTACT FORM ======
+
+// Telegram Bot Config
+const TELEGRAM_BOT_TOKEN = "8388274255:AAElpSPu7WGJGl9U9c7YrRP7PsbFshKZAL4";
+const TELEGRAM_CHAT_ID = "5932177382";
+
+// Contact form submit
+document.getElementById("contactForm").addEventListener("submit", async function(event) {
+    event.preventDefault(); // Stop reload
+
+    const btn = this.querySelector("button");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+    // Collect form values
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const subject = document.getElementById("subject").value.trim();
+    const message = document.getElementById("message").value.trim();
+
+    // Simple validation
+    if (!name || !email || !subject || !message) {
+        alert("Please fill all fields!");
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+        return;
+    }
+
+    // Prepare Telegram message
+    const telegramMessage = `
+📩 Monish_Portfolio Contact Form
+=================================
+
+Name: ${name}
+Email: ${email}
+Subject: ${subject}
+Message: ${message}
+
+=================================
+`;
+
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text: telegramMessage
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+            // Success
+            const notify = document.getElementById("notification");
+            notify.style.display = "block";
+            setTimeout(() => { notify.style.display = "none"; }, 3000);
+
+            this.reset();
+        } else {
+            alert("Failed to send message. Try again!");
+            console.error("Telegram error:", data);
+        }
+
+    } catch (err) {
+        alert("Something went wrong. Try again later!");
+        console.error("Fetch error:", err);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+    }
+});
